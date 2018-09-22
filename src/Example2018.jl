@@ -50,9 +50,7 @@ function Base. *(a, p::Polynomial)
 	Polynomial(map(x->a*x, p.coeffs))
 end
 
-function Base. *(p::Polynomial,a)
-	a*p
-end
+Base. *(p::Polynomial,a) = a*p
 
 export deriv
 function deriv(p::Polynomial)
