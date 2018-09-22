@@ -1,0 +1,1166 @@
+﻿julia> using Plots
+
+julia> plot(rand(5,5), linewidth=2,title="the plot")
+
+julia> struct Point2{T}
+       x::T
+       y::T
+       end
+
+julia> Point2{Float64}(1.5, 3.2)
+Point2{Float64}(1.5, 3.2)
+
+julia> Point2("a", 'B")
+ERROR: syntax: invalid character literal
+
+julia> Point2("a", 'B')
+ERROR: MethodError: no method matching Point2(::String, ::Char)
+Closest candidates are:
+  Point2(::T, ::T) where T at REPL[3]:2
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia> Point2{Char}('a', 'b')
+Point2{Char}('a', 'b')
+
+julia> Point2('a', 'b')
+Point2{Char}('a', 'b')
+
+julia> struct Point3
+       x
+       y
+       end
+
+julia> Point3(1,2)
+Point3(1, 2)
+
+julia> function add(p::Point{T}, q::Point{T}) where {T <: Number}
+       Point(p.x + q.y, p.y + q.y)
+       end
+ERROR: UndefVarError: Point not defined
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia>
+
+julia> function add(p::Point2{T}, q::Point2{T}) where {T <: Number}
+       Point2(p.x + q.y, p.y + q.y)
+       end
+add (generic function with 1 method)
+
+julia> add(Point2(1,2), Point2(3,4))
+Point2{Int64}(5, 6)
+
+julia> @code_typed add(Point2(1,2), Point2(3,4))
+CodeInfo(
+2 1 ─ %1 = (Base.getfield)(p, :x)::Int64                                                              │╻  getproperty
+  │   %2 = (Base.getfield)(q, :y)::Int64                                                              ││
+  │   %3 = (Base.add_int)(%1, %2)::Int64                                                              │╻  +
+  │   %4 = (Base.getfield)(p, :y)::Int64                                                              │╻  getproperty
+  │   %5 = (Base.getfield)(q, :y)::Int64                                                              ││
+  │   %6 = (Base.add_int)(%4, %5)::Int64                                                              │╻  +
+  │   %7 = %new(Point2{Int64}, %3, %6)::Point2{Int64}                                                 ││╻  Type
+  └──      return %7                                                                                  │
+) => Point2{Int64}
+
+julia> @code_native add(Point2(1,2), Point2(3,4))
+        .text
+; Function add {
+; Location: REPL[11]:2
+        pushq   %rbp
+        movq    %rsp, %rbp
+; Function +; {
+; Location: int.jl:53
+        vpbroadcastq    8(%r8), %xmm0
+        vpaddq  (%rdx), %xmm0, %xmm0
+;}
+        vmovdqu %xmm0, (%rcx)
+        movq    %rcx, %rax
+        popq    %rbp
+        retq
+        nopw    (%rax,%rax)
+;}
+
+julia> "ad" * "FG"
+"adFG"
+
+julia> "ad"^3
+"adadad"
+
+julia> cd("?Users/Home-laptop/Julia")
+ERROR: IOError: chdir ?Users/Home-laptop/Julia: invalid argument (EINVAL)
+Stacktrace:
+ [1] uv_error at .\libuv.jl:85 [inlined]
+ [2] cd(::String) at .\file.jl:76
+ [3] top-level scope at none:0
+
+julia> cd("/Users/Home-laptop/Julia")
+ERROR: IOError: chdir /Users/Home-laptop/Julia: no such file or directory (ENOENT)
+Stacktrace:
+ [1] uv_error at .\libuv.jl:85 [inlined]
+ [2] cd(::String) at .\file.jl:76
+ [3] top-level scope at none:0
+
+julia> cd("/Julia")
+
+julia> pwd()
+"C:\\Julia"
+
+(v1.0) pkg> generate Example2018
+Generating project Example2018:
+    Example2018\Project.toml
+    Example2018/src/Example2018.jl
+
+(v1.0) pkg>
+
+julia> cd ("Example2018")
+ERROR: syntax: space before "(" not allowed in "cd ("
+
+julia> cd("Example2018")
+
+julia> pwd()
+"C:\\Julia\\Example2018"
+
+(v1.0) pkg> activate .
+
+julia> using Example2018
+[ Info: Precompiling Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047]
+
+julia> Example2018.greet()
+Hello World!
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+ERROR: Package Example2018 did not provide a `test/runtests.jl` file
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Hello World!   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: { } vector syntax is discontinued
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:4
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: { } vector syntax is discontinued
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:4
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: { } vector syntax is discontinued
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:4
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Point(1, 2) + Point(2, 3) = Point{Int64}(3, 5)
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Point(1, 2) + Point(2, 3) = Point{Int64}(3, 5)
+ERROR: LoadError: UndefVarError: MPoint not defined
+Stacktrace:
+ [1] top-level scope at none:0
+ [2] include at .\boot.jl:317 [inlined]
+ [3] include_relative(::Module, ::String) at .\loading.jl:1038
+ [4] include(::Module, ::String) at .\sysimg.jl:29
+ [5] include(::String) at .\client.jl:388
+ [6] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:5
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Point(1, 2) + Point(2, 3) = Point{Int64}(3, 5)
+q = MPoint{Int64}(1, 2)
+q = MPoint{Int64}(9, 2)
+   Testing Example2018 tests passed
+
+(Example2018) pkg>
+**************************************************************************************
+Lecture3
+
+julia> using Examples2018
+ERROR: ArgumentError: Package Examples2018 not found in current path:
+- Run `Pkg.add("Examples2018")` to install the Examples2018 package.
+
+Stacktrace:
+ [1] require(::Module, ::Symbol) at .\loading.jl:817
+
+julia> using Pkg
+
+(v1.0) pkg> using Examples2018
+ERROR: expected command. instead got [using]
+
+julia> using Example2018
+ERROR: ArgumentError: Package Example2018 not found in current path:
+- Run `Pkg.add("Example2018")` to install the Example2018 package.
+
+Stacktrace:
+ [1] require(::Module, ::Symbol) at .\loading.jl:817
+
+(v1.0) pkg> activate .
+
+julia> pwd()
+"C:\\Users\\Home-laptop\\AppData\\Local\\Julia-1.0.0"
+
+julia> cd("Example2018")
+ERROR: IOError: chdir Example2018: no such file or directory (ENOENT)
+Stacktrace:
+ [1] uv_error at .\libuv.jl:85 [inlined]
+ [2] cd(::String) at .\file.jl:76
+ [3] top-level scope at none:0
+
+julia> cd("C:/Julia/Example2018")
+
+julia> pwd()
+"C:\\Julia\\Example2018"
+
+julia> using Example2018
+ERROR: ArgumentError: Package Example2018 not found in current path:
+- Run `Pkg.add("Example2018")` to install the Example2018 package.
+
+Stacktrace:
+ [1] require(::Module, ::Symbol) at .\loading.jl:817
+
+julia> test
+ERROR: UndefVarError: test not defined
+
+(Julia-1.0.0) pkg> test
+ERROR: trying to test unnamed project
+
+julia> pwd()
+"C:\\Julia\\Example2018"
+
+(Julia-1.0.0) pkg> activate .
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Point(1, 2) + Point(2, 3) = Point{Int64}(3, 5)
+q = MPoint{Int64}(1, 2)
+q = MPoint{Int64}(9, 2)
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Example2018.Polynomial{Int64}([1, 2, 3])
+Point(1, 2) + Point(2, 3) = Point{Int64}(3, 5)
+q = MPoint{Int64}(1, 2)
+q = MPoint{Int64}(9, 2)
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: UndefVarError: Polynomial not defined
+Stacktrace:
+ [1] top-level scope at show.jl:555
+ [2] include at .\boot.jl:317 [inlined]
+ [3] include_relative(::Module, ::String) at .\loading.jl:1038
+ [4] include(::Module, ::String) at .\sysimg.jl:29
+ [5] include(::String) at .\client.jl:388
+ [6] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:12
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+   Testing Example2018 tests passed
+
+julia> [1,2,3]
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+
+julia> cs = [1,2,3]
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+
+julia> (2c + 1 for c in cs)
+Base.Generator{Array{Int64,1},getfield(Main, Symbol("##3#4"))}(getfield(Main, Symbol("##3#4"))(), [1, 2, 3])
+
+julia> [2c+1 for c in cs]
+3-element Array{Int64,1}:
+ 3
+ 5
+ 7
+
+julia> [c for c in ennumerate(cs)]
+ERROR: UndefVarError: ennumerate not defined
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia> [c for c in enumerate(cs)]
+3-element Array{Tuple{Int64,Int64},1}:
+ (1, 1)
+ (2, 2)
+ (3, 3)
+
+julia> cs = ["a", "bc", "cd"]
+3-element Array{String,1}:
+ "a"
+ "bc"
+ "cd"
+
+julia> [c for c in enumerate(cs)]
+3-element Array{Tuple{Int64,String},1}:
+ (1, "a")
+ (2, "bc")
+ (3, "cd")
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+ERROR: LoadError: UndefVarError: evaluate not defined
+Stacktrace:
+ [1] top-level scope at show.jl:555
+ [2] include at .\boot.jl:317 [inlined]
+ [3] include_relative(::Module, ::String) at .\loading.jl:1038
+ [4] include(::Module, ::String) at .\sysimg.jl:29
+ [5] include(::String) at .\client.jl:388
+ [6] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:13
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+ERROR: LoadError: UndefVarError: enumarate not defined
+Stacktrace:
+ [1] +(::Polynomial{Int64}, ::Polynomial{Int64}) at C:\Julia\Example2018\src\Example2018.jl:35
+ [2] top-level scope at show.jl:555
+ [3] include at .\boot.jl:317 [inlined]
+ [4] include_relative(::Module, ::String) at .\loading.jl:1038
+ [5] include(::Module, ::String) at .\sysimg.jl:29
+ [6] include(::String) at .\client.jl:388
+ [7] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:14
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+   Testing Example2018 tests passed
+
+(Example2018) pkg> [1,2,4]
+ERROR: expected command. instead got [[1,2,4]]
+
+(Example2018) pkg> [1,2,4]
+ERROR: expected command. instead got [[1,2,4]]
+
+julia> [1,2,4]
+3-element Array{Int64,1}:
+ 1
+ 2
+ 4
+
+julia> f(x) = 2x+1
+f (generic function with 1 method)
+
+julia> map(f, [1,2,4])
+3-element Array{Int64,1}:
+ 3
+ 5
+ 9
+
+julia> x->2x + 1
+#13 (generic function with 1 method)
+
+julia> g = x->2x + 1
+#15 (generic function with 1 method)
+
+julia> g(25)
+51
+
+julia> map9x->2x+1, [1,2,4])
+ERROR: syntax: extra token ")" after end of expression
+
+julia> map(x->2x+1, [1,2,4])
+3-element Array{Int64,1}:
+ 3
+ 5
+ 9
+
+julia> a = 3
+3
+
+julia> map(x->a*x, [1,2,4])
+3-element Array{Int64,1}:
+  3
+  6
+ 12
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+   Testing Example2018 tests passed
+
+julia> [2,4,6,3][3}
+ERROR: syntax: unexpected "}"
+
+julia> [2,4,6,3][3]
+6
+
+julia> [2,4,6,3][2:end]
+3-element Array{Int64,1}:
+ 4
+ 6
+ 3
+
+julia> [2,4,6,3][2:2]
+1-element Array{Int64,1}:
+ 4
+
+julia> [2,4,6,3][2:1,-1]
+ERROR: BoundsError: attempt to access 4-element Array{Int64,1} at index [2:1, -1]
+Stacktrace:
+ [1] throw_boundserror(::Array{Int64,1}, ::Tuple{UnitRange{Int64},Int64}) at .\abstractarray.jl:484
+ [2] checkbounds at .\abstractarray.jl:449 [inlined]
+ [3] _getindex at .\multidimensional.jl:588 [inlined]
+ [4] getindex(::Array{Int64,1}, ::UnitRange{Int64}, ::Int64) at .\abstractarray.jl:905
+ [5] top-level scope at none:0
+
+julia> [2,4,6,3][2:1:-1]
+0-element Array{Int64,1}
+
+julia> [2,4,6,3][3:1:-1]
+0-element Array{Int64,1}
+
+julia> [2,4,6,3][3:1]
+0-element Array{Int64,1}
+
+julia> [2,4,6,3][2:end]
+3-element Array{Int64,1}:
+ 4
+ 6
+ 3
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: expected "]"
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:51
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: expected "]"
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:51
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: expected "]"
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:51
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+ERROR: LoadError: syntax: missing comma or ) in argument list
+Stacktrace:
+ [1] include at .\boot.jl:317 [inlined]
+ [2] include_relative(::Module, ::String) at .\loading.jl:1038
+ [3] include(::Module, ::String) at .\sysimg.jl:29
+ [4] top-level scope at none:2
+ [5] eval at .\boot.jl:319 [inlined]
+ [6] eval(::Expr) at .\client.jl:389
+ [7] top-level scope at .\none:3
+in expression starting at C:\Julia\Example2018\src\Example2018.jl:52
+ERROR: LoadError: Failed to precompile Example2018 [9f072410-b9b3-11e8-0f7a-e18dcd00a047] to C:\Users\Home-laptop\.julia\compiled\v1.0\Example2018\JpPex.ji.
+Stacktrace:
+ [1] error(::String) at .\error.jl:33
+ [2] macro expansion at .\logging.jl:313 [inlined]
+ [3] compilecache(::Base.PkgId, ::String) at .\loading.jl:1184
+ [4] _require(::Base.PkgId) at .\logging.jl:311
+ [5] require(::Base.PkgId) at .\loading.jl:852
+ [6] macro expansion at .\logging.jl:311 [inlined]
+ [7] require(::Module, ::Symbol) at .\loading.jl:834
+ [8] include at .\boot.jl:317 [inlined]
+ [9] include_relative(::Module, ::String) at .\loading.jl:1038
+ [10] include(::Module, ::String) at .\sysimg.jl:29
+ [11] include(::String) at .\client.jl:388
+ [12] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:1
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+ERROR: LoadError: UndefVarError: enumarate not defined
+Stacktrace:
+ [1] deriv(::Polynomial{Int64}) at C:\Julia\Example2018\src\Example2018.jl:51
+ [2] top-level scope at show.jl:555
+ [3] include at .\boot.jl:317 [inlined]
+ [4] include_relative(::Module, ::String) at .\loading.jl:1038
+ [5] include(::Module, ::String) at .\sysimg.jl:29
+ [6] include(::String) at .\client.jl:388
+ [7] top-level scope at none:0
+in expression starting at C:\Julia\Example2018\test\runtests.jl:16
+ERROR: Package Example2018 errored during testing
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+deriv(Polynomial([1, 1, 1, 1])) = Polynomial{Int64}([2, 3, 4])
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+deriv(Polynomial([1, 1, 1, 1])) = Polynomial{Int64}([1, 2, 3])
+deriv(Polynomial([1, 1, 1, 1, 1, 1, 1])) = Polynomial{Int64}([1, 2, 3, 4, 5, 6])
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+deriv(Polynomial([1, 1, 1, 1])) = Polynomial{Int64}([1, 2, 3])
+deriv(Polynomial([0, 0, 1, 0, 0, 0])) = Polynomial{Int64}([0, 2, 0, 0, 0])
+   Testing Example2018 tests passed
+
+(Example2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Example2018
+ Resolving package versions...
+Polynomial([1, 2, 3]) = Polynomial{Int64}([1, 2, 3])
+evaluate(Polynomial([1, 2, 3]), 2) = 17
+Polynomial([1, 2, 3]) + Polynomial([4, 5]) = Polynomial{Float64}([5.0, 7.0, 3.0])
+3 * Polynomial([1, 2, 3]) = Polynomial{Int64}([3, 6, 9])
+deriv(Polynomial([1, 1, 1, 1])) = Polynomial{Int64}([1, 2, 3])
+deriv(Polynomial([0, 0, 1, 0, 0, 0])) = Polynomial{Int64}([0, 2, 0, 0, 0])
+Polynomial([1, 2, 3]) * 7 = Polynomial{Int64}([7, 14, 21])
+   Testing Example2018 tests passed
+
+julia> x = 2
+2
+
+julia> :x
+:x
+
+julia> typeof(:x)
+Symbol
+
+julia> expr = :(2 + 3)
+:(2 + 3)
+
+julia> typeof(expr)
+Expr
+
+julia> expr.head
+:call
+
+julia> expr.args
+3-element Array{Any,1}:
+  :+
+ 2
+ 3
+
+julia> Expr(:call, [:*, 1,2])
+:((Any[:*, 1, 2])())
+
+julia> Expr(:call, :*, 1,2)
+:(1 * 2)
+
+julia> eval(Expr(:call, :*, 1,2))
+2
+##########
+
+(v1.0) pkg> generate Deriv2018
+Generating project Deriv2018:
+    Deriv2018\Project.toml
+    Deriv2018/src/Deriv2018.jl
+
+(v1.0) pkg> cd("C:\Julia\Deriv2018")
+ERROR: expected command. instead got [cd(]
+
+(v1.0) pkg> cd Deriv2018
+ERROR: expected command. instead got [cd]
+
+julia> cd("C:\Julia\Deriv2018")
+ERROR: syntax: invalid escape sequence
+
+julia> cd("C:\\Julia\\Deriv2018")
+ERROR: IOError: chdir C:\Julia\Deriv2018: no such file or directory (ENOENT)
+Stacktrace:
+ [1] uv_error at .\libuv.jl:85 [inlined]
+ [2] cd(::String) at .\file.jl:76
+ [3] top-level scope at none:0
+
+julia> cd("C:\\Julia")
+
+julia> pwd()
+"C:\\Julia"
+
+(v1.0) pkg> generate Deriv2018
+Generating project Deriv2018:
+    Deriv2018\Project.toml
+    Deriv2018/src/Deriv2018.jl
+
+(v1.0) pkg> cd ("C:/Julia/Deriv2018")
+ERROR: expected command. instead got [cd]
+
+(v1.0) pkg> cd("C:/Julia/Deriv2018")
+ERROR: expected command. instead got [cd(]
+
+julia> cd("C:\\Julia\\Deriv2018")
+
+julia> pwd()
+"C:\\Julia\\Deriv2018"
+
+(v1.0) pkg> activate .
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+ERROR: LoadError: ArgumentError: Package Example2018 not found in current path:
+- Run `Pkg.add("Example2018")` to install the Example2018 package.
+
+Stacktrace:
+ [1] require(::Module, ::Symbol) at .\loading.jl:817
+ [2] include at .\boot.jl:317 [inlined]
+ [3] include_relative(::Module, ::String) at .\loading.jl:1038
+ [4] include(::Module, ::String) at .\sysimg.jl:29
+ [5] include(::String) at .\client.jl:388
+ [6] top-level scope at none:0
+in expression starting at C:\Julia\Deriv2018\test\runtests.jl:1
+ERROR: Package Deriv2018 errored during testing
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+WARNING: Method definition derivative(Number, Symbol) in module Deriv2018 at C:\Julia\Deriv2018\src\Deriv2018.jl:5 overwritten at C:\Julia\Deriv2018\src\Deriv2018.jl:6.
+derivative(3, :x) = 0
+   Testing Deriv2018 tests passed
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+derivative(3, :x) = 0
+derivative(:x, :x) = 1
+derivative(:y, :x) = 0
+   Testing Deriv2018 tests passed
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+derivative(3, :x) = 0
+derivative(:x, :x) = 1
+derivative(:y, :x) = 0
+   Testing Deriv2018 tests passed
+
+julia> [1:[2,4]]
+ERROR: MethodError: no method matching (::Colon)(::Int64, ::Array{Int64,1})
+Closest candidates are:
+  Colon(::T<:Real, ::Any, ::T<:Real) where T<:Real at range.jl:40
+  Colon(::A<:Real, ::Any, ::C<:Real) where {A<:Real, C<:Real} at range.jl:10
+  Colon(::T, ::Any, ::T) where T at range.jl:39
+  ...
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia> [1: [2,4]]
+ERROR: MethodError: no method matching (::Colon)(::Int64, ::Array{Int64,1})
+Closest candidates are:
+  Colon(::T<:Real, ::Any, ::T<:Real) where T<:Real at range.jl:40
+  Colon(::A<:Real, ::Any, ::C<:Real) where {A<:Real, C<:Real} at range.jl:10
+  Colon(::T, ::Any, ::T) where T at range.jl:39
+  ...
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia> [1, [2,4]]
+2-element Array{Any,1}:
+ 1
+  [2, 4]
+
+julia> [1: [2,4]]
+ERROR: MethodError: no method matching (::Colon)(::Int64, ::Array{Int64,1})
+Closest candidates are:
+  Colon(::T<:Real, ::Any, ::T<:Real) where T<:Real at range.jl:40
+  Colon(::A<:Real, ::Any, ::C<:Real) where {A<:Real, C<:Real} at range.jl:10
+  Colon(::T, ::Any, ::T) where T at range.jl:39
+  ...
+Stacktrace:
+ [1] top-level scope at none:0
+
+julia> [1; [2,4]]
+3-element Array{Int64,1}:
+ 1
+ 2
+ 4
+
+julia> f(x, y) = x + y
+f (generic function with 1 method)
+
+julia> x = [1,2]
+2-element Array{Int64,1}:
+ 1
+ 2
+
+julia> f(x[1], x[2])
+3
+
+julia> f(x...)
+3
+
+julia> expr = :(2 + x)
+:(2 + x)
+
+julia> expr.head
+:call
+
+julia> expr.args
+3-element Array{Any,1}:
+  :+
+ 2
+  :x
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+derivative(3, :x) = 0
+derivative(:x, :x) = 1
+derivative(:y, :x) = 0
+┌ Error: not implemented
+└ @ Deriv2018 C:\Julia\Deriv2018\src\Deriv2018.jl:16
+derivative($(Expr(:quote, :(2 + 3))), :x) = nothing
+   Testing Deriv2018 tests passed
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+derivative(3, :x) = 0
+derivative(:x, :x) = 1
+derivative(:y, :x) = 0
+derivative($(Expr(:quote, :(2 + 3))), :x) = :(0 + 0)
+   Testing Deriv2018 tests passed
+
+(Deriv2018) pkg> test
+  Updating registry at `C:\Users\Home-laptop\.julia\registries\General`
+  Updating git-repo `https://github.com/JuliaRegistries/General.git`
+ Resolving package versions...
+  Updating `Project.toml`
+ [no changes]
+   Testing Deriv2018
+ Resolving package versions...
+derivative(3, :x) = 0
+derivative(:x, :x) = 1
+derivative(:y, :x) = 0
+derivative($(Expr(:quote, :(2 + 3))), :x) = :(0 + 0)
+derivative($(Expr(:quote, :(2 + x + a))), :x) = :(0 + 1 + 0)
+   Testing Deriv2018 tests passed
+
+julia> eval(:(0 + 1 + 0)
+       )
+1
+
+julia> xs = [1,2,3,4]
+4-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+
+julia> xs = [1,2]
+2-element Array{Int64,1}:
+ 1
+ 2
+
+julia> a = [1 2: 3 4]
+ERROR: DimensionMismatch("mismatch in dimension 1 (expected 1 got 2)")
+Stacktrace:
+ [1] _cs at .\abstractarray.jl:1345 [inlined]
+ [2] _cshp at .\abstractarray.jl:1341 [inlined]
+ [3] cat_shape(::Tuple{Bool,Bool}, ::Tuple{Int64,Int64}, ::Tuple{Int64}, ::Tuple{Int64}) at .\abstractarray.jl:1320 (repeats 2 times)
+ [4] _cat_t(::Val{2}, ::Type, ::Int64, ::Vararg{Any,N} where N) at .\abstractarray.jl:1356
+ [5] #cat_t#99(::Val{2}, ::Function, ::Type{Int64}, ::Int64, ::Vararg{Any,N} where N) at .\abstractarray.jl:1353
+ [6] (::getfield(Base, Symbol("#kw##cat_t")))(::NamedTuple{(:dims,),Tuple{Val{2}}}, ::typeof(Base.cat_t), ::Type{Int64}, ::Int64, ::Vararg{Any,N} where N) at .\none:0
+ [7] _cat at .\abstractarray.jl:1351 [inlined]
+ [8] #cat#100 at .\abstractarray.jl:1480 [inlined]
+ [9] #cat at .\none:0 [inlined]
+ [10] hcat(::Int64, ::UnitRange{Int64}, ::Int64) at .\abstractarray.jl:1460
+ [11] top-level scope at none:0
+
+julia> a = [1 2:
+ERROR: syntax: missing last argument in "2:" range expression
+
+julia> A = [1 2:
+ERROR: syntax: missing last argument in "2:" range expression
+
+julia> A = [1 2;
+       3 4]
+2×2 Array{Int64,2}:
+ 1  2
+ 3  4
+
+julia> A * xs
+2-element Array{Int64,1}:
+  5
+ 11
+
+julia> xs' * A
+1×2 LinearAlgebra.Adjoint{Int64,Array{Int64,1}}:
+ 7  10
+
+julia> xs' * xs
+5
+
+julia> B = [1 4; 6 5]
+2×2 Array{Int64,2}:
+ 1  4
+ 6  5
+
+julia> A * B
+2×2 Array{Int64,2}:
+ 13  14
+ 27  32
