@@ -2,10 +2,10 @@ using Test
 using Example2018
 
 # Polynomial form a ring
-# 1 addition is Associative
+# 1 addition is associative****
 # 2 additive identity
 # 3 additive inverse
-# 4 additive commutes
+# 4 additive commutes****
 # 5 multiplication is...
 
 @testset "Polynomials form a ring" begin
